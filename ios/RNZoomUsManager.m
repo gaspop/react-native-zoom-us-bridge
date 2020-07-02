@@ -121,22 +121,55 @@ static RNZoomUsBridgeEventEmitter *internalEmitter = nil;
 }
 
 - (void)onMeetingReturn:(MobileRTCMeetError)errorCode internalError:(NSInteger)internalErrorCode {
-  NSLog(@"onMeetingReturn, error=%d, internalErrorCode=%zd", errorCode, internalErrorCode);
+    NSLog(@"onMeetingReturn, error=%d, internalErrorCode=%zd", errorCode, internalErrorCode);
 
-  if (errorCode != MobileRTCMeetError_Success) {
+    if (errorCode != MobileRTCMeetError_Success) {
     RNZoomUsBridgeEventEmitter *emitter = [RNZoomUsBridgeEventEmitter allocWithZone: nil];
     [emitter meetingErrored:@{}];
-  }
+    }
 
 }
 
 - (void)onMeetingError:(MobileRTCMeetError)errorCode message:(NSString *)message {
-  NSLog(@"onMeetingError, errorCode=%d, message=%@", errorCode, message);
-if (errorCode != MobileRTCMeetError_Success) {
-    RNZoomUsBridgeEventEmitter *emitter = [RNZoomUsBridgeEventEmitter allocWithZone: nil];
-    [emitter meetingErrored:@{}];
-}
+    NSLog(@"onMeetingError, errorCode=%d, message=%@", errorCode, message);
+    if (errorCode != MobileRTCMeetError_Success) {
+        RNZoomUsBridgeEventEmitter *emitter = [RNZoomUsBridgeEventEmitter allocWithZone: nil];
+        [emitter meetingErrored:@{}];
+    }
 
 }
+
+- (void)onMeetingEndedReason:(MobileRTCMeetingEndReason)reason {
+    NSString *reasonAsText = [self getReasonText: reason];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue: reasonAsText forKey: @"reason"];
+
+    RNZoomUsBridgeEventEmitter *emitter = [RNZoomUsBridgeEventEmitter allocWithZone: nil];
+    [emitter userEndedTheMeeting: dic];
+}
+
+- (NSString *)getReasonText:(MobileRTCMeetingEndReason)reason {
+    switch (reason) {
+        case MobileRTCMeetingEndReason_ConnectBroken:
+            return @"CONNECTION_BROKEN";
+        case MobileRTCMeetingEndReason_EndByHost:
+            return @"ENDED_BY_HOST";
+        case MobileRTCMeetingEndReason_FreeMeetingTimeout:
+            return @"FREE_MEETING_TIMEOUT";
+        case MobileRTCMeetingEndReason_HostEndForAnotherMeeting:
+            return @"ENDED_BY_HOST_FOR_ANOTHER_MEETING";
+        case MobileRTCMeetingEndReason_JBHTimeout:
+            return @"JBH_TIMEOUT";
+        case MobileRTCMeetingEndReason_RemovedByHost:
+            return @"REMOVED_BY_HOST";
+        case MobileRTCMeetingEndReason_SelfLeave:
+            return @"USER_LEFT";
+        case MobileRTCMeetingEndReason_Unknown:
+            return @"UNKNOWN";
+        default:
+            return @"UNKNOWN";
+    }
+}
+
 
 @end
